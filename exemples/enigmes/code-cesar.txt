@@ -1,0 +1,7 @@
+Le message codé du lutin
+Un lutin a laissé ce message, en décalant chaque lettre de 1 dans l'alphabet (A devient B, B devient C…) :
+
+KPZFVY OPFM
+
+Saurez-vous le déchiffrer ?
+Réponse : JOYEUX NOEL (chaque lettre a été décalée d'un rang : K→J, P→O, Z→Y…)

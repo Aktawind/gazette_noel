@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>${titre_page}</title>
+</head>
+<body style="margin:0;padding:0;background:${fond};">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${fond};">
+<tr><td align="center" style="padding:20px 10px;">
+
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"
+       style="width:100%;max-width:600px;background:${papier};border:1px solid #e0d3b8;font-family:Georgia,'Times New Roman',serif;color:${texte};font-size:17px;line-height:1.6;">
+
+  <!-- En-tête façon journal -->
+  <tr><td style="background:${vert};padding:8px 20px;text-align:center;font-size:12px;letter-spacing:3px;color:#f3e6c4;text-transform:uppercase;">
+    ❄ &nbsp; Édition n°${numero} &nbsp; ❄
+  </td></tr>
+  <tr><td style="padding:26px 30px 10px 30px;text-align:center;">
+    <div style="font-size:15px;letter-spacing:6px;color:${or};">✦ ✦ ✦</div>
+    <h1 style="margin:6px 0 4px 0;font-family:Georgia,'Times New Roman',serif;font-size:40px;line-height:1.1;font-weight:normal;color:${vert};">
+      ${titre}
+    </h1>
+    <div style="font-size:15px;letter-spacing:6px;color:${or};">✦ ✦ ✦</div>
+  </td></tr>
+  <tr><td style="padding:0 30px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+           style="border-top:2px solid ${vert};border-bottom:1px solid ${vert};">
+      <tr>
+        <td style="padding:7px 0;font-size:14px;color:${doux};font-style:italic;">${date}</td>
+        <td style="padding:7px 0;font-size:14px;color:${rouge};text-align:right;font-style:italic;">${compte_a_rebours}</td>
+      </tr>
+    </table>
+  </td></tr>
+
+  ${sections}
+
+  <!-- Conclusion -->
+  <tr><td style="padding:24px 30px 30px 30px;text-align:center;">
+    <div style="font-size:15px;letter-spacing:6px;color:${or};margin-bottom:10px;">✦ ✦ ✦</div>
+    <div style="font-size:18px;color:${vert};font-style:italic;">${conclusion}</div>
+  </td></tr>
+  ${solution_finale}
+  <tr><td style="background:${vert};padding:10px 20px;text-align:center;font-size:12px;color:#f3e6c4;">
+    🎄 &nbsp;Gazette familiale, fabriquée avec amour&nbsp; 🎄
+  </td></tr>
+</table>
+
+</td></tr>
+</table>
+</body>
+</html>

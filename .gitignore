@@ -1,0 +1,5 @@
+config.ini
+donnees/
+apercu*.html
+__pycache__/
+*.pyc
