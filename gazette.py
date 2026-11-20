@@ -317,7 +317,7 @@ def compte_a_rebours(jour: dt.date) -> str:
 def section_html(emoji: str, titre_rubrique: str, contenu: str) -> str:
     c = COULEURS
     return (
-        '<tr><td style="padding:26px 30px 6px 30px;">'
+        '<tr><td style="padding:26px 30px 6px 30px;word-wrap:break-word;overflow-wrap:anywhere;">'
         '<div style="font-family:Georgia,\'Times New Roman\',serif;font-size:13px;letter-spacing:2px;'
         'text-transform:uppercase;color:{rouge};border-bottom:1px solid {or_};padding-bottom:6px;'
         'margin-bottom:14px;">{emoji}&nbsp; {titre}</div>{contenu}</td></tr>'
