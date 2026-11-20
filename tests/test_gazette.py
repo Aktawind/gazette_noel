@@ -125,6 +125,21 @@ class TestGazette(unittest.TestCase):
         self.assertNotIn("petite énigme", html)
 
 
+class TestBrevo(unittest.TestCase):
+    def test_starttls_et_identifiant(self):
+        with tempfile.TemporaryDirectory() as d:
+            c = Path(d) / "config.ini"
+            c.write_text("[gazette]\n[mail]\nexpediteur = moi@gmail.com\nidentifiant = 12@smtp-brevo.com\n"
+                         "mot_de_passe = cle\ndestinataires = a@b.c\nserveur = smtp-relay.brevo.com\nport = 587\n",
+                         encoding="utf-8")
+            cfg = gazette.Config(c)
+            with mock.patch("smtplib.SMTP") as smtp:
+                gazette.connexion_smtp(cfg)
+            smtp.assert_called_once_with("smtp-relay.brevo.com", 587, timeout=60)
+            smtp.return_value.starttls.assert_called_once()
+            smtp.return_value.login.assert_called_once_with("12@smtp-brevo.com", "cle")
+
+
 class TestLecture(unittest.TestCase):
     def test_analyse(self):
         self.assertEqual(gazette.analyser_fichier_texte("Titre\n\nLe corps"), ("Titre", "Le corps", None))

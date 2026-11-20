@@ -113,6 +113,8 @@ class Config:
 
         self.expediteur = m.get("expediteur", "").strip()
         self.nom_expediteur = m.get("nom_expediteur", self.titre).strip()
+        # Identifiant de connexion SMTP (Brevo : « xxx@smtp-brevo.com ») ; par défaut l'expéditeur (Gmail)
+        self.identifiant = m.get("identifiant", "").strip() or self.expediteur
         self.mot_de_passe = os.environ.get("GAZETTE_MOT_DE_PASSE") or m.get("mot_de_passe", "")
         self.mot_de_passe = self.mot_de_passe.replace(" ", "")
         self.destinataires = [a.strip() for a in re.split(r"[,;\s]+", m.get("destinataires", "")) if a.strip()]
@@ -482,7 +484,7 @@ def connexion_smtp(cfg: Config) -> smtplib.SMTP:
     else:
         smtp = smtplib.SMTP(cfg.serveur, cfg.port, timeout=60)
         smtp.starttls(context=ctx)
-    smtp.login(cfg.expediteur, cfg.mot_de_passe)
+    smtp.login(cfg.identifiant, cfg.mot_de_passe)
     return smtp
 
 
@@ -657,6 +659,11 @@ def cmd_test_mail(cfg: Config, jour: dt.date, dossier: Path) -> int:
 
 
 def main(argv: Optional[List[str]] = None) -> int:
+    for flux in (sys.stdout, sys.stderr):  # console Windows : pas de plantage sur les emojis
+        try:
+            flux.reconfigure(errors="replace")
+        except (AttributeError, ValueError):
+            pass
     p = argparse.ArgumentParser(description="La Gazette de Noël")
     p.add_argument("--config", default=str(ICI / "config.ini"), help="chemin du fichier de configuration")
     sp = p.add_subparsers(dest="commande")

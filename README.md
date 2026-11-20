@@ -63,13 +63,39 @@ Des exemples de chaque format se trouvent dans [`exemples/`](exemples/).
 
 ---
 
-## 2. Créer l'adresse Gmail d'envoi
+## 2. Choisir le service d'envoi
+
+### Option A : Brevo (recommandé, comme pour le Lego Tracker)
+
+1. Sur https://app.brevo.com, menu en haut à droite → **Expéditeurs, domaines et IP dédiées** : vérifiez que l'adresse d'expédition y est validée.
+2. Menu → **SMTP & API** → onglet **SMTP** : notez le **serveur** (`smtp-relay.brevo.com`), le **port** (587) et l'**identifiant** (du type `123abc@smtp-brevo.com`).
+3. Cliquez sur **Générer une nouvelle clé SMTP**. C'est elle qui va dans `mot_de_passe`. Attention : la clé API du Lego Tracker ne fonctionne pas ici.
+
+Le plan gratuit permet 300 mails par jour, très largement suffisant.
+
+### Option B : Gmail
 
 1. Créez un compte Gmail, par exemple `gazette.de.noel.xxx@gmail.com`.
 2. Activez la **validation en deux étapes** : Compte Google → Sécurité.
 3. Créez un **mot de passe d'application** à l'adresse https://myaccount.google.com/apppasswords (nom : « Gazette »). Google affiche 16 lettres : c'est ce mot de passe qui va dans la configuration, pas celui du compte.
 
 Une précision : les Gazettes envoyées apparaîtront dans le dossier « Envoyés » de ce compte, à 8 h, en même temps que chez vous. N'allez simplement pas y jeter un œil avant 😉.
+
+---
+
+## Essai sur un PC Windows
+
+1. Installez Python depuis https://www.python.org/downloads/ et **cochez « Add python.exe to PATH »** pendant l'installation.
+2. Téléchargez ce dépôt depuis GitHub (bouton **Code → Download ZIP**) et décompressez-le, par exemple dans `Documents\gazette_noel`.
+3. Dans ce dossier, copiez `config.exemple.ini` en `config.ini` et ouvrez-le avec le Bloc-notes. Mettez `dossier_contenu = exemples` et remplissez la partie `[mail]`.
+4. Ouvrez un terminal dans le dossier : clic droit dans l'explorateur → **Ouvrir dans le Terminal**. Lancez ensuite :
+   ```
+   py gazette.py apercu
+   py gazette.py verifier
+   py gazette.py test-mail
+   ```
+
+Pour essayer avec **vos propres dossiers** sans rien gâcher, créez un petit dossier d'essai avec deux ou trois fichiers bidons, puis lancez `py gazette.py test-mail --contenu C:\chemin\vers\essai`.
 
 ---
 
