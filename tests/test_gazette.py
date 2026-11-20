@@ -184,6 +184,14 @@ class TestLecture(unittest.TestCase):
         self.assertIn("<ol", h)
         self.assertIn('href="https://ex.com/page"', h)
 
+    def test_liste_sous_un_titre(self):
+        h = gazette.texte_vers_html("Ingrédients :\n- 1 œuf\n- du sucre\n\n1. Battre\n2. Cuire")
+        self.assertIn("<p", h)
+        self.assertEqual(h.count("<li"), 4)
+        self.assertIn("<ul", h)
+        self.assertIn("<ol", h)
+        self.assertNotIn("- 1 œuf", h)
+
 
 if __name__ == "__main__":
     unittest.main()

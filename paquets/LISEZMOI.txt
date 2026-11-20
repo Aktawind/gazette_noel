@@ -1,7 +1,13 @@
 Paquets de contenus prêts à l'emploi — NE PAS OUVRIR (surprise !)
 
-enigmes.zip : 24 énigmes avec leurs réponses.
-  1. Déposer enigmes.zip dans le dossier partagé Gazette du NAS (File Station → Charger).
-  2. Clic droit sur enigmes.zip → Extraire → Extraire ici. Un dossier « enigmes » apparaît.
-  3. Supprimer enigmes.zip.
+enigmes.zip  : 24 énigmes avec leurs réponses        → dossier enigmes/
+contenus.zip : 24 histoires vraies (avec leur source),
+               24 traditions, 24 recettes, 30 phrases → dossiers histoires/, traditions/, recettes/, phrases/
+
+Installation sur le NAS, sans rien lire :
+  1. Déposer les .zip dans le dossier partagé Gazette (File Station → Charger).
+  2. Clic droit sur chaque .zip → Extraire → Extraire ici.
+  3. Supprimer les .zip.
+Si un dossier du même nom existe déjà, les fichiers s'y ajoutent (noms différents, rien n'est écrasé
+tant que vous n'avez pas vous-même de fichiers nommés histoire-01.txt, recette-01.txt...).
 Ne pas double-cliquer sur les fichiers .txt !

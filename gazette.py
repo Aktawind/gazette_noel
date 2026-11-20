@@ -304,26 +304,40 @@ def piocher(candidats: List[Element], utilises: set, rng: random.Random) -> Opti
 RE_URL = re.compile(r"(https?://[^\s<]+[^\s<.,;:!?)\]'\"])")
 
 
+RE_PUCE = re.compile(r"^\s*[-•*–]\s+")
+RE_NUMERO = re.compile(r"^\s*(\d+)[.)]\s+")
+
+
 def texte_vers_html(texte: str) -> str:
-    """Lignes vides = paragraphes ; lignes commençant par - ou • = liste ;
-    les liens deviennent cliquables."""
+    """Lignes vides = paragraphes ; lignes commençant par - ou • = liste à puces ;
+    lignes commençant par 1. 2. … = liste numérotée (une ligne de texte juste au-dessus,
+    comme « Ingrédients : », est acceptée) ; les liens deviennent cliquables."""
     c = COULEURS
     morceaux = []
     for bloc in re.split(r"\n\s*\n", texte.strip()):
-        lignes = [l.rstrip() for l in bloc.split("\n") if l.strip()]
-        if not lignes:
-            continue
-        puces = [re.match(r"^\s*([-•*–]|\d+[.)])\s+", l) for l in lignes]
-        if all(puces):
-            ordonnee = all(re.match(r"^\s*\d+[.)]", l) for l in lignes)
-            balise = "ol" if ordonnee else "ul"
-            items = "".join(
-                '<li style="margin:0 0 6px 0;">{}</li>'.format(lier(html.escape(l[m.end():])))
-                for l, m in zip(lignes, puces))
-            morceaux.append('<{0} style="margin:0 0 14px 0;padding-left:22px;">{1}</{0}>'.format(balise, items))
-        else:
-            contenu = "<br>".join(lier(html.escape(l.strip())) for l in lignes)
-            morceaux.append('<p style="margin:0 0 14px 0;">{}</p>'.format(contenu))
+        groupes = []  # [type, [lignes]] avec type = "p", "ul" ou "ol"
+        for l in bloc.split("\n"):
+            if not l.strip():
+                continue
+            m_puce, m_num = RE_PUCE.match(l), RE_NUMERO.match(l)
+            if m_puce:
+                type_, contenu, debut = "ul", l[m_puce.end():], None
+            elif m_num:
+                type_, contenu, debut = "ol", l[m_num.end():], int(m_num.group(1))
+            else:
+                type_, contenu, debut = "p", l.strip(), None
+            if not groupes or groupes[-1][0] != type_:
+                groupes.append([type_, [], debut])
+            groupes[-1][1].append(contenu)
+        for type_, lignes, debut in groupes:
+            if type_ == "p":
+                morceaux.append('<p style="margin:0 0 14px 0;">{}</p>'.format(
+                    "<br>".join(lier(html.escape(l)) for l in lignes)))
+            else:
+                items = "".join('<li style="margin:0 0 6px 0;">{}</li>'.format(lier(html.escape(l))) for l in lignes)
+                attr = ' start="{}"'.format(debut) if type_ == "ol" and debut and debut != 1 else ""
+                morceaux.append('<{0}{1} style="margin:0 0 14px 0;padding-left:22px;">{2}</{0}>'.format(
+                    type_, attr, items))
     return "\n".join(morceaux).replace("<a ", '<a style="color:{};" '.format(c["rouge"]))
 
 
