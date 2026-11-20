@@ -73,6 +73,23 @@ Des exemples de chaque format se trouvent dans [`exemples/`](exemples/).
 
 Le plan gratuit permet 300 mails par jour, très largement suffisant.
 
+⚠️ **La clé SMTP expire après 90 jours sans utilisation** : chaque novembre, générez-en une nouvelle et mettez-la dans `config.ini`, ainsi que dans le secret GitHub `BREVO_SMTP_CLE`.
+
+**Ne mettez jamais la vraie clé dans un fichier sur GitHub** (le dépôt est public) : elle va seulement dans `config.ini` sur la machine qui envoie, et dans les secrets GitHub.
+
+### Tester l'envoi depuis GitHub (sans PC ni NAS)
+
+1. Sur GitHub : **Settings → Secrets and variables → Actions → New repository secret**, et créez ces 4 secrets :
+
+   | Nom | Valeur |
+   |---|---|
+   | `BREVO_SMTP_IDENTIFIANT` | l'identifiant Brevo (`xxxx@smtp-brevo.com`) |
+   | `BREVO_SMTP_CLE` | la clé SMTP |
+   | `GAZETTE_EXPEDITEUR` | l'adresse d'expédition validée dans Brevo |
+   | `GAZETTE_DESTINATAIRES` | l'adresse qui reçoit le test (plusieurs : séparées par des virgules) |
+
+2. Onglet **Actions → Test d'envoi → Run workflow**. Le mail « [TEST] » utilise uniquement les contenus d'exemple. Une coche verte signifie que Brevo a accepté le mail. En cas de croix rouge, cliquez dessus pour voir l'erreur.
+
 ### Option B : Gmail
 
 1. Créez un compte Gmail, par exemple `gazette.de.noel.xxx@gmail.com`.

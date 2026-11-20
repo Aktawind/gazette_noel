@@ -1,0 +1,52 @@
+# Envoie un mail de test (contenus d'EXEMPLE uniquement) via Brevo.
+# À lancer depuis GitHub : onglet « Actions » → « Test d'envoi » → « Run workflow ».
+# Les identifiants viennent des secrets du dépôt (Settings → Secrets and variables → Actions).
+name: Test d'envoi
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Jour simulé (entre le 1er et le 24 décembre)"
+        required: false
+        default: "2026-12-05"
+
+permissions:
+  contents: read
+
+jobs:
+  test-mail:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # Même version que le Python intégré à DSM 7 (Synology)
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.8"
+
+      - name: Écrire la configuration à partir des secrets
+        env:
+          EXPEDITEUR: ${{ secrets.GAZETTE_EXPEDITEUR }}
+          DESTINATAIRES: ${{ secrets.GAZETTE_DESTINATAIRES }}
+          IDENTIFIANT: ${{ secrets.BREVO_SMTP_IDENTIFIANT }}
+        run: |
+          for v in EXPEDITEUR DESTINATAIRES IDENTIFIANT; do
+            if [ -z "${!v}" ]; then echo "::error::Secret manquant pour $v"; exit 1; fi
+          done
+          cat > config.ini <<CONF
+          [gazette]
+          dossier_contenu = exemples
+          [mail]
+          expediteur = $EXPEDITEUR
+          destinataires = $DESTINATAIRES
+          identifiant = $IDENTIFIANT
+          serveur = smtp-relay.brevo.com
+          port = 587
+          CONF
+
+      - name: Envoyer le mail de test
+        env:
+          GAZETTE_MOT_DE_PASSE: ${{ secrets.BREVO_SMTP_CLE }}
+          DATE_TEST: ${{ inputs.date }}
+        run: python gazette.py test-mail --date "$DATE_TEST"

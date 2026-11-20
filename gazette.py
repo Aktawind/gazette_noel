@@ -654,7 +654,7 @@ def cmd_test_mail(cfg: Config, jour: dt.date, dossier: Path) -> int:
     del msg["Message-ID"]
     msg["Message-ID"] = make_msgid(domain="gazette-noel")
     envoyer_message(msg, cfg, tentatives=1)
-    print("Mail de test envoyé à {}".format(", ".join(cfg.destinataires)))
+    print("Mail de test envoyé à {} destinataire(s).".format(len(cfg.destinataires)))
     return 0
 
 
