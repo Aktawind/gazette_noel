@@ -95,7 +95,7 @@ class Config:
                 "Fichier de configuration introuvable : {}\n"
                 "Copiez config.exemple.ini en config.ini et remplissez-le.".format(chemin)
             )
-        cp = configparser.ConfigParser()
+        cp = configparser.ConfigParser(interpolation=None)  # un « % » dans la clé ne pose pas problème
         cp.read(chemin, encoding="utf-8")
         g = cp["gazette"] if cp.has_section("gazette") else {}
         m = cp["mail"] if cp.has_section("mail") else {}
@@ -607,9 +607,9 @@ def cmd_verifier(cfg: Config, tester_mail: bool = True) -> int:
     if tester_mail:
         try:
             connexion_smtp(cfg).quit()
-            print("✓ Connexion à Gmail réussie")
+            print("✓ Connexion au serveur d'envoi ({}) réussie".format(cfg.serveur))
         except Exception as e:
-            print("✗ Connexion à Gmail impossible : {}".format(e))
+            print("✗ Connexion au serveur d'envoi ({}) impossible : {}".format(cfg.serveur, e))
             ok = False
     return 0 if ok else 1
 
