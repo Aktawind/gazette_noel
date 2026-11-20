@@ -59,6 +59,16 @@ Réponse : Le sapin de Noël !
 
 Formats acceptés : JPG, PNG et GIF. Les fichiers de plus de 15 Mo sont ignorés. Le **nom du sous-dossier** s'affiche sous la photo, par exemple « 📁 Vacances 2019 ». Pour le masquer, mettez `afficher_dossier_photo = non` dans la configuration. Les dossiers techniques du Synology (`@eaDir`, `#recycle`) sont ignorés.
 
+**Photos déjà rangées sur le NAS** : pas besoin de les recopier. Indiquez les dossiers autorisés dans `config.ini`, un par ligne, en décalant chaque ligne d'un espace. Leurs sous-dossiers sont inclus, et seuls ces dossiers sont lus :
+
+```
+dossiers_photos =
+   /volume1/photo/Noël
+   /volume1/photo/Vacances
+```
+
+La légende reprend alors le chemin, par exemple « 📁 Vacances · 2019 · Bretagne ». Le chemin exact d'un dossier se trouve dans File Station : clic droit → Propriétés → Emplacement.
+
 Des exemples de chaque format se trouvent dans [`exemples/`](exemples/).
 
 ---

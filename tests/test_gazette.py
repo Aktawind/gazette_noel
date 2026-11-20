@@ -125,6 +125,30 @@ class TestGazette(unittest.TestCase):
         self.assertNotIn("petite énigme", html)
 
 
+class TestDossiersPhotos(unittest.TestCase):
+    def test_plusieurs_dossiers(self):
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            photo = gazette.EXEMPLES / "photos" / "Noël 2024" / "sapin.jpg"
+            for rel in ("photo/Noël/a.jpg", "photo/Noël/2018/b.JPG", "photo/Vacances/c.png",
+                        "photo/Vacances/@eaDir/c.png/SYNOPHOTO_THUMB_XL.jpg", "photo/Prive/d.jpg"):
+                (d / rel).parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(photo, d / rel)
+            (d / "photo/Vacances/video.mp4").write_bytes(b"x")
+            c = d / "config.ini"
+            c.write_text("[gazette]\ndossiers_photos =\n   {0}/photo/Noël\n#   {0}/photo/Prive\n"
+                         "   {0}/photo/Vacances\n   {0}/photo/Noël/2018\n[mail]\n".format(d.as_posix()),
+                         encoding="utf-8")
+            cfg = gazette.Config(c)
+            self.assertEqual(len(cfg.dossiers_photos), 3)
+            cands = gazette.candidats_photos(d / "inutile", cfg.dossiers_photos)
+            noms = sorted(x.chemin.name for x in cands)
+            self.assertEqual(noms, ["a.jpg", "b.JPG", "c.png"])  # ni Prive, ni @eaDir, ni vidéo, ni doublon
+            legendes = {x.chemin.name: x.legende for x in cands}
+            self.assertEqual(legendes["b.JPG"], "Noël · 2018")
+            self.assertEqual(legendes["c.png"], "Vacances")
+
+
 class TestBrevo(unittest.TestCase):
     def test_starttls_et_identifiant(self):
         with tempfile.TemporaryDirectory() as d:

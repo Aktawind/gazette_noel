@@ -96,7 +96,13 @@ class Config:
                 "Copiez config.exemple.ini en config.ini et remplissez-le.".format(chemin)
             )
         cp = configparser.ConfigParser(interpolation=None)  # un « % » dans la clé ne pose pas problème
-        cp.read(chemin, encoding="utf-8")
+        try:
+            cp.read(chemin, encoding="utf-8")
+        except configparser.Error as e:
+            raise SystemExit(
+                "Erreur dans {} : {}\n"
+                "Astuce : pour dossiers_photos, chaque dossier va sur sa propre ligne, "
+                "décalée d'au moins un espace.".format(chemin.name, e))
         g = cp["gazette"] if cp.has_section("gazette") else {}
         m = cp["mail"] if cp.has_section("mail") else {}
 
@@ -110,6 +116,13 @@ class Config:
         self.heure_envoi = dt.time(int(h), int(mn or 0))
         self.afficher_dossier_photo = g.get("afficher_dossier_photo", "oui").strip().lower() in (
             "oui", "yes", "true", "1")
+        # Dossiers de photos existants (un par ligne). Vide : on utilise <dossier_contenu>/photos.
+        self.dossiers_photos = []  # type: List[Path]
+        for ligne in g.get("dossiers_photos", "").split("\n"):
+            ligne = ligne.strip().strip('"')
+            if ligne and not ligne.startswith(("#", ";")):
+                chemin = Path(ligne)
+                self.dossiers_photos.append(chemin if chemin.is_absolute() else (ICI / chemin).resolve())
 
         self.expediteur = m.get("expediteur", "").strip()
         self.nom_expediteur = m.get("nom_expediteur", self.titre).strip()
@@ -248,18 +261,34 @@ def candidats_texte(dossier_contenu: Path, rubrique: str) -> List[Element]:
     return elements
 
 
-def candidats_photos(dossier_contenu: Path) -> List[Element]:
-    dossier = dossier_contenu / "photos"
+def candidats_photos(dossier_contenu: Path, dossiers_photos: Optional[List[Path]] = None) -> List[Element]:
+    """Photos de <dossier_contenu>/photos, ou des dossiers listés dans la configuration.
+    La légende est le chemin des sous-dossiers (ex. « Famille · 2019 · Bretagne »)."""
+    if dossiers_photos:
+        racines = [(d, True) for d in dossiers_photos]
+    else:
+        racines = [(dossier_contenu / "photos", False)]
     elements = []
-    for f in lister_fichiers(dossier, EXT_PHOTO):
-        try:
-            if f.stat().st_size > TAILLE_MAX_PHOTO or f.stat().st_size == 0:
+    vues = set()
+    for racine, nommer_racine in racines:
+        for f in lister_fichiers(racine, EXT_PHOTO):
+            try:
+                taille = f.stat().st_size
+            except OSError:
                 continue
-        except OSError:
-            continue
-        parent = f.parent.relative_to(dossier)
-        legende = " · ".join(parent.parts) if parent.parts else None
-        elements.append(Element(f.relative_to(dossier_contenu).as_posix(), None, "", chemin=f, legende=legende))
+            if taille == 0 or taille > TAILLE_MAX_PHOTO:
+                continue
+            parties = list(f.parent.relative_to(racine).parts)
+            if nommer_racine:
+                parties.insert(0, racine.name)
+                cle = "photo:" + f.as_posix()
+            else:
+                cle = f.relative_to(dossier_contenu).as_posix()
+            if cle in vues:  # dossier listé deux fois, ou dossier inclus dans un autre
+                continue
+            vues.add(cle)
+            legende = " · ".join(parties) if parties else None
+            elements.append(Element(cle, None, "", chemin=f, legende=legende))
     return elements
 
 
@@ -347,9 +376,9 @@ class Edition:
 
 
 def composer(jour: dt.date, dossier_contenu: Path, utilises: set, reponse_veille: Optional[dict],
-             rng: random.Random) -> Edition:
+             rng: random.Random, dossiers_photos: Optional[List[Path]] = None) -> Edition:
     ed = Edition(jour)
-    ed.photo = piocher(candidats_photos(dossier_contenu), utilises, rng)
+    ed.photo = piocher(candidats_photos(dossier_contenu, dossiers_photos), utilises, rng)
     for rubrique in RUBRIQUES:
         el = piocher(candidats_texte(dossier_contenu, rubrique), utilises, rng)
         if el:
@@ -549,7 +578,8 @@ def cmd_envoyer(cfg: Config, maintenant: Optional[dt.datetime] = None, force: bo
         journal("Gazette n°{} déjà envoyée aujourd'hui.".format(jour.day))
         return 0
 
-    ed = composer(jour, cfg.dossier_contenu, set(etat["utilises"]), etat.get("reponse_en_attente"), random.Random())
+    ed = composer(jour, cfg.dossier_contenu, set(etat["utilises"]), etat.get("reponse_en_attente"), random.Random(),
+                  cfg.dossiers_photos)
     if not ed.photo and not ed.rubriques:
         journal("ERREUR : aucun contenu disponible dans {}".format(cfg.dossier_contenu))
         return 1
@@ -588,10 +618,13 @@ def cmd_verifier(cfg: Config, tester_mail: bool = True) -> int:
     if not cfg.dossier_contenu.is_dir():
         print("  ✗ dossier introuvable !")
         ok = False
+    for d in cfg.dossiers_photos:
+        print("Dossier de photos : {}{}".format(d, "" if d.is_dir() else "   ✗ introuvable !"))
+        ok = ok and d.is_dir()
     etat = charger_etat()
     utilises = set(etat["utilises"])
     print("\nContenus disponibles (non encore utilisés) — les contenus eux-mêmes ne sont pas affichés :")
-    rubriques = [("photos", candidats_photos(cfg.dossier_contenu))]
+    rubriques = [("photos", candidats_photos(cfg.dossier_contenu, cfg.dossiers_photos))]
     rubriques += [(r, candidats_texte(cfg.dossier_contenu, r)) for r in RUBRIQUES]
     for nom, cands in rubriques:
         libres = len([c for c in cands if c.cle not in utilises])
